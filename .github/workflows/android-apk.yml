@@ -23,31 +23,24 @@ jobs:
         with:
           lfs: true
 
-      - name: Prepare Godot export templates
+      - name: Prepare Godot export environment
+        env:
+          HOME: /root
         run: |
-          mkdir -p ~/.local/share/godot/export_templates/
-          mkdir -p ~/.config/
-          mkdir -p "$HOME/.config/godot"
-          mkdir -p "$HOME/.local/share/godot/export_templates"
-          if [ "$HOME" != "/root" ] && [ -d /root/.config/godot ]; then
-            cp -a /root/.config/godot/. "$HOME/.config/godot/"
-          fi
-          if [ "$HOME" != "/root" ]; then
-            cp -a /root/.local/share/godot/export_templates/4.3.stable "$HOME/.local/share/godot/export_templates/4.3.stable"
-          fi
-          SETTINGS="$HOME/.config/godot/editor_settings-4.3.tres"
-          touch "$SETTINGS"
-          grep -q 'export/android/java_sdk_path' "$SETTINGS" || echo 'export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"' >> "$SETTINGS"
-          grep -q 'export/android/android_sdk_path' "$SETTINGS" || echo 'export/android/android_sdk_path = "/usr/lib/android-sdk"' >> "$SETTINGS"
-          grep -q 'export/android/debug_keystore' "$SETTINGS" || echo 'export/android/debug_keystore = "/root/debug.keystore"' >> "$SETTINGS"
-          grep -q 'export/android/debug_keystore_user' "$SETTINGS" || echo 'export/android/debug_keystore_user = "androiddebugkey"' >> "$SETTINGS"
-          grep -q 'export/android/debug_keystore_pass' "$SETTINGS" || echo 'export/android/debug_keystore_pass = "android"' >> "$SETTINGS"
-          grep -q 'export/android/force_system_user' "$SETTINGS" || echo 'export/android/force_system_user = false' >> "$SETTINGS"
+          test -d /root/.config/godot
+          test -d /root/.local/share/godot/export_templates/4.3.stable
+          echo "Using the preconfigured Godot Android environment from the CI image."
+          echo "Java: $(command -v java)"
+          echo "Android SDK: ${ANDROID_HOME:-${ANDROID_SDK_ROOT:-not-set}}"
 
       - name: Import project resources
+        env:
+          HOME: /root
         run: godot --headless --path godot --editor --quit
 
       - name: Build APK
+        env:
+          HOME: /root
         run: |
           mkdir -p build/android
           godot --headless --verbose --path godot --export-debug "Android" ../build/android/MouhFail.apk
