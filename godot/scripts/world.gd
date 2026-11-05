@@ -42,6 +42,7 @@ func _spawn_bots() -> void:
 
 func _create_hud() -> void:
     var layer := CanvasLayer.new()
+    layer.set_script(HUDScript)
     layer.add_to_group("hud")
     var label := Label.new()
     label.name = "Stats"
@@ -55,7 +56,6 @@ func _create_hud() -> void:
     hint.add_theme_color_override("font_color", Color.WHITE)
     layer.add_child(hint)
     add_child(layer)
-    layer.set_script(HUDScript)
     layer.update_stats(100, 24, 0)
 
 const HUDScript = preload("res://scripts/hud.gd")
