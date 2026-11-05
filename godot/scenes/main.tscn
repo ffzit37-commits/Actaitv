@@ -1,6 +1,7 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1"]
+[ext_resource type="Script" path="res://scripts/world.gd" id="2"]
 
 [sub_resource type="Environment" id="WorldEnvironment"]
 background_mode = 1
@@ -21,6 +22,7 @@ size = Vector3(80, 1, 80)
 material = SubResource("GroundMaterial")
 
 [node name="Main" type="Node3D"]
+script = ExtResource("2")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("WorldEnvironment")
