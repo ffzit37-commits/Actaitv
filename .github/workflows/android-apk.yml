@@ -30,24 +30,29 @@ jobs:
           ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: |
           set -eux
-          command -v sdkmanager
           java -version
           yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
-          sdkmanager --sdk_root="$ANDROID_HOME" "platform-tools" "build-tools;33.0.2" "platforms;android-33"
-          test -d "$ANDROID_HOME/build-tools/33.0.2"
-          ls -la "$ANDROID_HOME/build-tools/33.0.2"
+          sdkmanager --sdk_root="$ANDROID_HOME" --install "platform-tools" "build-tools;33.0.2" "platforms;android-33"
+          test -x "$ANDROID_HOME/build-tools/33.0.2/aapt"
+          test -f "$ANDROID_HOME/platforms/android-33/android.jar"
+          sdkmanager --sdk_root="$ANDROID_HOME" --list_installed
 
-      - name: Prepare Godot export environment
+      - name: Configure Godot Android paths
         env:
           HOME: /root
-          ANDROID_HOME: /usr/lib/android-sdk
-          ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: |
-          test -d /root/.config/godot
+          mkdir -p /root/.config/godot
+          cat > /root/.config/godot/editor_settings-4.3.tres <<'EOF'
+          [gd_resource type="EditorSettings" format=3]
+
+          [resource]
+          export/android/android_sdk_path = "/usr/lib/android-sdk"
+          export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+          EOF
+          cat /root/.config/godot/editor_settings-4.3.tres
           test -d /root/.local/share/godot/export_templates/4.3.stable
-          echo "Godot Android export environment is ready."
-          echo "Java: $(command -v java)"
-          echo "Android SDK: $ANDROID_HOME"
+          test -x /usr/lib/android-sdk/build-tools/33.0.2/aapt
+          test -f /usr/lib/android-sdk/platforms/android-33/android.jar
 
       - name: Import project resources
         env:
@@ -64,6 +69,7 @@ jobs:
         run: |
           mkdir -p build/android
           godot --headless --verbose --path godot --export-debug "Android" ../build/android/MouhFail.apk
+          test -s build/android/MouhFail.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
