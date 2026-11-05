@@ -37,22 +37,40 @@ jobs:
           test -f "$ANDROID_HOME/platforms/android-34/android.jar"
           sdkmanager --sdk_root="$ANDROID_HOME" --list_installed
 
-      - name: Configure Godot Android paths
+      - name: Configure Godot Android paths and debug signing
         env:
           HOME: /root
+          ANDROID_HOME: /usr/lib/android-sdk
+          ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: |
-          mkdir -p /root/.config/godot
+          set -eux
+          mkdir -p /root/.config/godot /root/.android
+          # Godot's Android export preset requires a usable debug keystore.
+          if [ ! -s /root/.android/debug.keystore ]; then
+            keytool -genkeypair -v \
+              -keystore /root/.android/debug.keystore \
+              -storepass android -alias androiddebugkey -keypass android \
+              -dname "CN=Android Debug,O=Android,C=US" \
+              -keyalg RSA -keysize 2048 -validity 10000
+          fi
           cat > /root/.config/godot/editor_settings-4.3.tres <<'EOF'
           [gd_resource type="EditorSettings" format=3]
 
           [resource]
           export/android/android_sdk_path = "/usr/lib/android-sdk"
           export/android/java_sdk_path = "/usr/lib/jvm/java-17-openjdk-amd64"
+          export/android/debug_keystore = "/root/.android/debug.keystore"
+          export/android/debug_keystore_user = "androiddebugkey"
+          export/android/debug_keystore_pass = "android"
           EOF
           cat /root/.config/godot/editor_settings-4.3.tres
           test -d /root/.local/share/godot/export_templates/4.3.stable
+          test -d /usr/lib/jvm/java-17-openjdk-amd64
           test -x /usr/lib/android-sdk/build-tools/34.0.0/aapt
+          test -x /usr/lib/android-sdk/build-tools/34.0.0/zipalign
+          test -x /usr/lib/android-sdk/build-tools/34.0.0/apksigner
           test -f /usr/lib/android-sdk/platforms/android-34/android.jar
+          test -s /root/.android/debug.keystore
 
       - name: Import project resources
         env:
