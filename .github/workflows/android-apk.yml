@@ -23,24 +23,44 @@ jobs:
         with:
           lfs: true
 
+      - name: Prepare Android SDK
+        env:
+          HOME: /root
+          ANDROID_HOME: /usr/lib/android-sdk
+          ANDROID_SDK_ROOT: /usr/lib/android-sdk
+        run: |
+          set -eux
+          command -v sdkmanager
+          java -version
+          yes | sdkmanager --sdk_root="$ANDROID_HOME" --licenses
+          sdkmanager --sdk_root="$ANDROID_HOME" "platform-tools" "build-tools;33.0.2" "platforms;android-33"
+          test -d "$ANDROID_HOME/build-tools/33.0.2"
+          ls -la "$ANDROID_HOME/build-tools/33.0.2"
+
       - name: Prepare Godot export environment
         env:
           HOME: /root
+          ANDROID_HOME: /usr/lib/android-sdk
+          ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: |
           test -d /root/.config/godot
           test -d /root/.local/share/godot/export_templates/4.3.stable
-          echo "Using the preconfigured Godot Android environment from the CI image."
+          echo "Godot Android export environment is ready."
           echo "Java: $(command -v java)"
-          echo "Android SDK: ${ANDROID_HOME:-${ANDROID_SDK_ROOT:-not-set}}"
+          echo "Android SDK: $ANDROID_HOME"
 
       - name: Import project resources
         env:
           HOME: /root
+          ANDROID_HOME: /usr/lib/android-sdk
+          ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: godot --headless --path godot --editor --quit
 
       - name: Build APK
         env:
           HOME: /root
+          ANDROID_HOME: /usr/lib/android-sdk
+          ANDROID_SDK_ROOT: /usr/lib/android-sdk
         run: |
           mkdir -p build/android
           godot --headless --verbose --path godot --export-debug "Android" ../build/android/MouhFail.apk
