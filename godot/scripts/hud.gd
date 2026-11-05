@@ -41,7 +41,8 @@ func _build_ui() -> void:
     _make_button("▶", Vector2(182, -104), Vector2(62, 58), "move_right")
     _make_action_button("قفز", Vector2(-188, -194), Vector2(92, 62), Callable(self, "_jump"))
     _make_action_button("إعادة", Vector2(-188, -120), Vector2(92, 54), Callable(self, "_reload"))
-    fire_button = _make_action_button("إطلاق", Vector2(-200, -80), Vector2(110, 76), Callable(self, "_fire_start"))
+    fire_button = _make_action_button("إطلاق", Vector2(-200, -80), Vector2(110, 76), Callable())
+    fire_button.button_down.connect(_fire_start)
     fire_button.button_up.connect(_fire_stop)
     _make_action_button("علاج", Vector2(-188, -14), Vector2(92, 52), Callable(self, "_heal"))
 
